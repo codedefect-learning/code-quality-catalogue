@@ -1,0 +1,578 @@
+﻿defect name,Issue Qualifier,Source,Defect Group,description,code example,code fix example,Detectability,Pylint,Flake8,Edulint,Vulture,NonEnglishNameDetector
+Duplicate Block,Duplication,Organization,"Group1 + Group2 (OR3)	",Two very similar blocks of code.,"if c:
+    f(1)
+    g(1)
+    f(1)
+else:
+    f(2)
+    g(2)
+    f(2)","def fun(n):
+    f(n)
+    g(n)
+    f(n)
+
+if c:
+    fun(1)
+else:
+    fun(2)",Detectable,,,R6598 Duplicate blocks starting on lines 11 and 15. Extract the code to a helper function.（Emitted when there are duplicate blocks of code as a body of an if/elif/else/for/while/with/try-except block.）,,
+Duplicate Expression,Duplication,Control/Block,Group1 + Group2 (CB9),Repeated occurences of the same (complex) expression.,"if value > 10:
+    p = p + ((c + 10) * TAX_RATE) / 100
+else:
+    p = p - ((c + 10) * TAX_RATE) / 100","adj = ((c + 10) * TAX_RATE) / 100
+if value > 10:
+    p = p + adj
+else:
+    p = p - adj",Detectable,,,"R6597 A complex expression 'XXX' used repeatedly (on lines X, X). Extract it to a local variable or create a helper function.",,
+"Redundant If-Else	",Unnecessary,Control/Block,Group1 + Group2 (CB1),If-else statement with both branches being return True/False.,"def check_number(num):
+    if num % 7 == 3: 
+        return True
+    else:
+        return False","def check_number(num):
+    return num % 7 == 3",Detectable,"R1703: The if statement can be replaced with 'return bool(test)' (simplifiable-if-statement)（Used when an if statement can be replaced with 'bool(test)'.）
+","WPS531 Found simplifiable returning `if` condition in a function（Forbid if statements that simply return booleans in functions or methods.）
+WPS502 Found simplifiable `if` condition（Forbid simplifiable if conditions）","R6201 The if statement can be replaced with 'return number > 0（Emitted when the condition of an if statement can be returned directly (possibly negated).）
+R6203 The conditional assignment can be replaced with 'redundant_check = <negated difference not in ['x', 'difference', 'n']>' [default]   （If-else statement with both branches being return True/False.）  ",,
+"Redundant Comparison	",Unnecessary,Expressions,Group1 + Group2 (EX1),Comparing a boolean expression to a boolean constant.,"if (x > 10) == True: 
+    return length","if x > 10:
+    return length",Detectable,"C0121: Comparison 'x == True' should be 'x is True' if checking for the singleton value True, or 'x' if testing for truthiness (singleton-comparison)（Used when an expression is compared to singleton values like True, False or None.）","E712 comparison to True should be 'if cond is True:' or 'if cond:'（When comparing a variable to True, you should use the form if x is True or simply if x. The most common incorrect form is if x == True.）",E712 comparison to True should be 'if cond:' [default],,
+"Mergeable Equal	",Unsuitable,Expressions,Group1,Comparing the same expression to multiple values.,c == 'a' or c == 'A',"c in ('a', 'A') / c in ""aA""",Detectable,"R1714: Consider merging these comparisons with 'in' by using 'x in (X, X)'. Use a set instead if elements are hashable. (consider-using-in)（To check if a variable is equal to one of many values, combine the values into a set or tuple and check if the variable is contained ""in"" it instead of checking for equality against each of the values. This is faster and less verbose.）",,"R1714 Consider merging these comparisons with 'in' by using 'x in (1, 2, 3)'. Use a set instead if elements are hashable. [python-specific]",,
+"Redundant Elif	",Unnecessary,Organization,Group1+ Group2 (CB2),If clause with a condition that is always true.,"if x < y:
+    print(1)
+elif x >= y:
+    print(2)","if x < y:
+    print(1)
+else:
+    print(2)",Detectable,,,R6611 Use else instead of elif.(Emitted when the condition in elif is negation of the condition in the if.),,
+"Unused Variable	",Unnecessary,Data,"Group1 + Group2 (DT1)	",Variable that is defined but never read.,"def main():
+    a = 5
+    # other code
+    return 0
+","def main():
+    # other code
+    return 0",Detectable,W0612: Unused variable 'XXX' (unused-variable)(Used when a variable is defined but not used.),F841 local variable 'XXX' is assigned to but never used（A local variable in your function was defined but is not being used. This local variable should be removed.）,F841 local variable 'name' is assigned to but never used [default],unused variable 'XXX' (XX% confidence),
+"Unused Parameter	",Unnecessary,Data,"Group1 + Group2 (DT2)	",Function parameter is never used in the body.,Redundant Variable/Attribute,"def input_hour():
+    while True:
+        hour = int(input(""Enter the hour (1-12): ""))
+        if 1 <= hour <= 12:
+            break
+    return hour",Special Case,W0613: Unused argument 'XXX' (unused-argument)（Used when a function or method argument is not used.）,,,,
+"Unreachable Code	",Unnecessary,Control/Block,"Group1 + Group2 (CB7)	",Part of source code that is never executed.,"def func():
+    return x
+    print(x)  ","def func():
+    return x",Detectable,"W0101: Unreachable code (unreachable)（Used when there is some code behind a ""return"" or ""raise"" statement, which will never be accessed.）","WPS427 Found unreachable code（This is probably caused by return or raise statements. However, we cannot cover 100% of truly unreachable code by this rule. This happens due to the dynamic nature of python. For example, detecting that 1 / some_value would sometimes raise an exception is too complicated and is out of the scope of this rule.）","W0101: Unreachable code (unreachable)
+WPS427 Found unreachable code",unreachable code after ' XXX' (XX% confidence),
+"Statement with No Effect	",Unnecessary,Control/Block,"Group1 + Group2 (CB4)	",A statement that has no effect on execution.,"var = """"
+var = int(input())",var = int(input()) ,Special Case,W0104: Statement seems to have no effect (pointless-statement)（Used when a statement doesn't have (or at least seems to) any effect.）,WPS428 Found statement that has no effect（Refactor your code in case it was a typo or error or just delete this code.）,"W0104 Statement seems to have no effect [default]
+WPS428 Found statement that has no effect",,
+Commented Out Code,Unnecessary,Documentation,Group1,The code contains commented out parts of code.,"# print('Debug', some_statement)",remove the code,Detectable,,E800 Found commented out code,,,
+"Unused Function	",Unnecessary,Organization,"Group1 + Group2 (OR1)	",A function that is defined but never called.,"def f():
+    print(4)
+
+print(4)",print(4),Detectable,,,,unused function 'XXX' (XX% confidence),
+Nested If,Unnecessary,Control/Block,"Group1 + Group2 (CB8)	",Nested if-statements avoidable using conjunction.,"if c1:
+    if c2:
+        # body","if c1 and c2:
+    # body",Detectable,,,R6207 The if statement can be merged with the nested one to 'if XX and XX:' [enhancement]（Emitted when the condition of an if statement can be merged with its nested if’s condition using logical operators.）,,
+All If Branches Start/End with Identical Code,Duplication,Control/Block,"Group1 + Group2 (CB12)	","All if/elif/else branches start or end with the same code, which could be moved outside the condition.","if cond:
+    print(""foo"")
+    i += 1
+else:
+    print(""bar"")
+    i += 1","if cond:
+    print(""foo"")
+else:
+    print(""bar"")
+i += 1",Detectable,,,"R6595 Identical code inside all if's branches, move * lines before the if.（Emitted when identical code starts or ends all branches of an if statement.）",,
+Else If,Unsuitable,Control/Block,"Group1 + Group2 (CB21)	",Else clause containing just single if-else block.,"else:
+    if c:
+        print(x)","menu = (""eggs"", ""spam"", 42.4)
+
+f_string_order = f""{menu[0]} and {menu[1]}: {menu[2]:0.2f} ¤""",Detectable,,WPS513 Found implicit `elif` condition,R6605 Use elif.(Emitted when the code contains else: if construction instead of elif. Might return a false positive if the code mixes tabs and spaces.),,
+Empty If,Unnecessary,Control/Block,Group1 + Group2 (CB5),Redundant branch containing just pass.,"if c:
+    pass 
+else:
+    # body","if not c:
+    # body",Detectable,,,R6205 Use 'if <negated c>: <else body>' instead of 'pass' [default],,
+For with Redundant Indexing,Unsuitable,Control/Block,Group1,"Iterating through indices, only accessing items at the current index.","for i in range(len(text)):
+    print(text[i])","for letter in text:
+    print(letter)",Detectable,,,"R6307 Iterate directly: ""for var in XXX"" (with appropriate name for ""var"") [default]",,
+"While as For	",Unsuitable,Control/Block,Group1 + Group2 (CB20),While loop used when the number of iterations is known beforehand.,"number = 0
+while number < limit:
+    print(number)
+    number += 2","for number in range(0, limit, 2):
+    print(number)",Special Case,,,R6305 You should use for loop instead of this form of while loop. (Emitted when a while loop can be transformed into a for loop.),,
+Changing the Control Variable of a For Loop,Unclear,Control/Block,"Group1 + Group2 (CB15)	",Changing a control variable of a for loop at the end of an iteration has no effect.,"for iter in range(numMaxIter):
+    iter = ( ... )","for iter in range(numMaxIter):
+other_var = ( ... )",Detectable,,,R6304 Changing the control variable X of a for loop has no effect. [default]（Emitted when the control variable of a for loop is being changed.）,,
+Redundant For,Unnecessary,Control/Block,"Group1 + Group2 (CB6)	",For loop with zero or single iteration.,"def abs_value(d):
+    result = d
+    for i in range(10): 
+        if d < 0:
+            result = -d
+    return result","def abs_value(d):
+    if d < 0:
+        return -d
+    return d",Special Case,,,R6606 The for loop makes only one iteration.(Emitted when a for loop would always perform at most one iteration.),,
+"Misleading Name	",Unclear,Documentation,Group1 + Group2 (DC2),"Variable name i or j used when traversing items, not indices.","for i in text:
+    print(i)","for letter in text:
+    print(letter)",Undetectable,,,,,
+Easy-to-Confuse Variable Name,Unclear,Data,"Group1	","The code contains a variable named I, l, or O, which can be confusing.","O = 100.0
+total = O * 1.08","order = 100.0
+total = order * 1.08",Detectable,,"E741 ambiguous variable name（Variables named I, O, and l can be very hard to read. This is because the letter I and the letter l are easily confused, and the letter O and the number 0 can be easily confused.）
+","E741 ambiguous variable name
+",,
+"using Non-English Identifiers	",Unclear,Data,Group1,The code uses function or variable names that are not in English.,promenna = 28,variable = 28,Detectable,,,,,"NE103 Non-English variable name: 'XX'
+NE101 Non-English function name: 'XX'
+NE102  Non-English  class name: 'XX'
+NE104  Non-English. attribute name: 'XX'"
+Built-in Name,Unclear,Data,Group1,Variable name conflicts with a built-in function name.,"list = [3, 4]","nums = [3, 4]",Detectable,W0622: Redefining built-in 'list' (redefined-builtin)（Used when a variable or function overrides a built-in）,WPS125 Found builtin shadowing: list（Forbid variable or module names which shadow builtin names）,W0622 Redefining built-in 'list' [default],,
+Inconsistent Names,Inconsistent,Typographic,Group1 + Group2 (TP5),Functions with similar purpose have names using different naming schemes.,"validate_pair
+tuple_validation","validate_pair
+validate_tuple",Undetectable,,,,,
+"Long Function	",Unsuitable,Organization,"Group1 + Group2 (OR8)	",Function with more than 20 statements.,"def f():
+    ...  # More than 20 statements",Decompose further if possible,Detectable,R0915: Too many statements (**/20) (too-many-statements),,R6702 Function 'XX' is too long (XX which is over 20 statements).,,
+Long Script,Unsuitable,Organization,"Group1 + Group2 (OR8)	",Program with more than 20 statements on the level of the main program (outside functions)., ...  # More than 20 statements,Decompose further if possible,Detectable,,,R6701 Too much code outside of functions or classes (** which is over 20 statements).（Emitted when there are too many lines of code on the top level that are not import or function or class definition.）,,
+"Too Many Arguments	",Unclear,Data,Group1,The function has too many arguments.,"def move(board, x, y, dir_x, dir_y, color):
+   # body","def move(board, position, direction, color):
+    # body",Detectable,R0913: Too many arguments (*/5) (too-many-arguments),WPS211 Found too many arguments: * > 5,R0913 Too many arguments (* /5) [complexity],,
+"Lack of Decomposition	",Unclear,Organization,"Group2 (OR6)	","The Single Responsibility Principle may be ignored when
+decomposing the code into multiple methods ","def input_status():
+    credits = int(input(""Enter the number of credits taken: ""))
+    while not (1 <= credits <= 150):
+        credits = int(input(""Enter the number of credits taken: ""))
+
+    if credits <= 28:
+        return ""freshman""
+    elif credits <= 56:
+        return ""sophomore""
+    elif credits <= 84:
+        return ""junior""
+    else:
+        return ""senior""","def input_credits():
+    credits = int(input(""Enter the number of credits taken: ""))
+    while not (1 <= credits <= 150):
+        credits = int(input(""Enter the number of credits taken: ""))
+    return credits
+
+def determine_status(credits):
+    if credits <= 28:
+        return ""freshman""
+    elif credits <= 56:
+        return ""sophomore""
+    elif credits <= 84:
+        return ""junior""
+    return ""senior""",Undetectable,,,,,
+"Long Line	",Unclear,Typographic,"Group1 + Group2 (TP1, TP3)	",Line with more than 100 characters.,income = (gross_wages + taxable_interest + (dividends - qualified_dividends) - ira_deduction - student_loan_interest),"income = (gross_wages
+          + taxable_interest
+          + (dividends - qualified_dividends)
+          - ira_deduction
+          - student_loan_interest)",Detectable,C0301: Line too long (1**/100) (line-too-long),E501 line too long (1** > 100 characters),E501 line too long (1** > 100 characters) [default],,
+"Non-ASCII Characters in Identifier	",Unclear,Data,"Group1	",An identifier contains non-ASCII characters.,"proměnná = 28
+переменная = 42
+some_變量 = ''",promenna = 28,Detectable,"C2401: XXX name ""XXX"" contains a non-ASCII character, consider renaming it. (non-ascii-name)（Used when the name contains at least one non-ASCII unicode character.）",WPS119 Found unicode name（Rename your entities so that they contain only ASCII symbols.）,"C2401 Argument name ""X"" contains a non-ASCII character, consider renaming it. [default]
+",,
+"Multiple Statements on One Line	",Unclear,Typographic,"condAux = cond1 and cond2
+condRes = condAux and cond3",The code contains more than one statement on a single line.,"if ""apple"" in fruits: print(""it's there"")","if ""apple"" in fruits:
+    print(""it's there"")",Detectable,C0321: More than one statement on a single line (multiple-statements)（Used when more than on statement are found on the same line.）,"E702 multiple statements on one line (semicolon)（Multiple statements should not be on the same line separated by a semicolon. They should be on their own separate lines）
+E701 multiple statements on one line (colon）（Multiple statements should be on their own separate lines. This improves readability.）
+E704	Multiple statements on one line (def)（Multiple statements of a function definition should be on their own separate lines.）","E701 multiple statements on one line (colon) [default]
+E702 multiple statements on one line (semicolon) [default]
+E704	Multiple statements on one line (def)[default]",,
+Magical Constant Instead of Character's Ordinal Value,Unclear,Documentation,"Group1 + Group2 (DC3)	",Using a magic number instead of ord() for a character.,ord(char) < 65,ord(char) < ord('A') / char < 'A',Detectable,,,"R6615 Remove the call to 'ord' and compare to the string directly ""< 'X'"" instead of using the magical constant *. Careful, this may require changing the comparison operator. [default]",,
+"Using Global Variables	",Unclear,Data,"Group1 + Group2 (DT8)	",The code unnecessarily uses global variables.,"global_list = []
+def main():
+    global_list.append(""abc"") 
+    print(global_list)
+    return None
+main()","def main():
+local_list = []
+local_list.append(""abc"")
+print(local_list)
+return None
+main()",Detectable,"W0603: Using the global statement (global-statement)（Used when you use the ""global"" statement to update a global variable. Pylint discourages its usage. That doesn't mean you cannot use it!）",,"R6401 Do not use global variables; you use count, modifying it for example at line X.",,
+Explicit File Open and Close,Unsuitable,Expressions,Group1,"The code uses explicit open and close to manipulate a file, instead of using 'with'.","f = open(""path.txt"")
+# work with the file
+f.close()","with open(""path.txt"") as f:
+    # work with the file",Detectable,R1732: Consider using 'with' for resource-allocating operations (consider-using-with)（Emitted if a resource-allocating assignment or call may be replaced by a 'with' block. By using 'with' the release of the allocated resources is ensured even in the case of an exception.),"WPS515 Found `open()` used without a context manage（When you open() something, you need to close it. When using a context manager - it is automatically done for you. When not using it - you might find yourself in a situation when file is not closed and is not accessible anymore.）",R1732 Consider using 'with' for resource-allocating operations [enhancement],,
+Inappropriate Whitespace: Tabs and Spaces,Inconsistent,Typographic,Group1  + Group2 (TP5),Mixing tabs and spaces.,"def get_name(self):
+    if self.first_name and self.last_name:
+••••→→return self.first_name + ' ' + self.last_name
+    else:
+        return self.last_name","def get_name(self):
+    if self.first_name and self.last_name:
+••••••••return self.first_name + ' ' + self.last_name
+    else:
+        return self.last_name",Detectable,,"E101 indentation contains mixed spaces and tabs(Indentation has both tabs and spaces in it. Programmers should use either tabs or spaces, but not both.)",E101 indentation contains mixed spaces and tabs,,
+One-Letter Name,Unclear,Data,Group1,One-letter variable name.,l = 4,length = 4,Detectable,,"
+VNE001 single letter variable names like 'X' are not allowed","WPS111 Found too short name: X < 2（Forbid short variable or module names.This rule checks: modules, variables, attributes, functions, methods, and classes. We do not count trailing and leading underscores when calculating length.）",,
+Using Known Value as Variable,Duplication,Expressions,Group1 + Group2 (EX3),The code uses an expression already tested for a specific value.,"if len(lst1) == 0:
+    print(lst2[len(lst1)])","if len(lst1) == 0:
+    print(lst2[0])",Undetectable,,,,,
+Duplicate Sequence,Duplication,Control/Block,Group1,Sequence of commands (or blocks of commands) that are identical or differ by a single value.,"print(1)
+print(2)
+print(3)
+print(4)","for i in range(4):
+    print(i + 1)",Detectable,,,"R6552 There are * repetitions of 1 similar statements, which can be simplified using a loop. Consider iterating over 'range(*, *)'（Emitted when similar sequential blocks can be deduplicated using a loop.）
+R6560 There are * repetitions of 1 similar statements, which can be simplified using a loop. Consider iterating over 'range(*, *)'(Emitted when similar sequential blocks can be deduplicated using a loop.)
+R6553 The body of the loop contains duplicate blocks, starting on lines %s. Avoid the duplication by repeating the outer loop %s times.(Emitted when the body can be simplified using a loop and the extra iterations can be performed by iterating the outer loop more times.)",,
+Block with No Effect,Unnecessary,Control/Block,Group1,An if statement or loop has no effect.,"for number in [1, 2, 3]:
+    break",remove the code,Detectable,,WPS328 Found useless node: for（Forbid meaningless nodes）,WPS328 Found useless node: for,,
+Inappropriate Whitespace: Visible,Inconsistent,Typographic,"Group1 + Group2 (TP5, TP4, DC5)","Violating PEP 8 conventions about whitespace (only the unanimously accepted rules), ""visible"" formatting (indentation, spaces around operators/keywords, use of empty lines)…","x= 3 *y
+print( x, y )","x = 3*y
+print(x, y)
+",Detectable,,"E231 missing whitespace after ','（There should be whitespace after the characters ,, ;, and :）
+E305 expected 2 blank lines after class or function definitio（Functions and classes should have two blank lines after them, separating them from other functions and classes.）
+E225 missing whitespace around operator（There should be one space before and after all operators.）
+E275 missing whitespace after keyword
+E302 expected 2 blank lines
+E261 at least two spaces before inline comment
+E303,E211,E228,E251,E203,E202,E201,E301,E227,E306,E252,E117,E128,E116,E114,E127,E113,E122,E112,E125,E115,E131,E129","E231 missing whitespace after ','
+E305 expected 2 blank lines after class or function definitio
+E225 missing whitespace around operator
+E275 missing whitespace after keyword
+E302 expected 2 blank lines
+E261 at least two spaces before inline comment
+E303,E211,E228,E251,E203,E202,E201,E301,E227,E306,E252,E117,E128,E116,E114,E127,E113,E122,E112,E125,E115,E131,E129",,
+Identifier Breaks Naming Conventions,Inconsistent,Typographic,"Group1 + Group2 (TP5,TP6)",The code contains an identifier that does not follow naming conventions.,"localVariable, global_variable, CLASS_NAME","local_variable, GLOBAL_VARIABLE, ClassName",Detectable," C0103: XXX name ""XXX"" doesn't conform to XXX naming style (invalid-name)（Used when the name doesn't conform to naming rules associated to its type (constant, variable, class...).","N801 class names should use CapWords convention (class names)
+N802 function name should be lowercase (function names)
+N803 argument name should be lowercase (function arguments)
+N804 first argument of a classmethod should be named ‘cls’ (function arguments)
+N805 first argument of a method should be named ‘self’ (function arguments)
+N806 variable in function should be lowercase
+N807 function name should not start and end with ‘__’
+N811 constant imported as non constant (constants)
+N812 lowercase imported as non-lowercase
+N813 camelcase imported as lowercase
+N814 camelcase imported as constant (distinct from N817 for selective enforcement)
+N815 mixedCase variable in class scope (constants, method names)
+N816 mixedCase variable in global scope (constants)
+N817 camelcase imported as acronym (distinct from N814 for selective enforcement)
+N818 error suffix in exception names (exceptions)","C0103 Function name ""XXX"" doesn't conform to snake_case naming style [default]",,
+Duplicate If,Duplication,Control/Block,Group1 + Group2 (CB10),Consecutive if statements with the same body.,"if value < 2:
+    return 0
+if value > 15:
+    return 0","if value < 2 or value > 15:
+    return 0",Detectable,,,"R6596 Identical code inside 2 consecutive ifs, join their conditions using 'or'.（Emitted when several consecutive if statements have identical bodies and thus can be joined by or in their conditions.）",,
+Duplicate Block in If,Duplication,Control/Block,Group1,Duplicate blocks inside if/elif/else where the condition could be evaluated inside the block to avoid duplication.,"if line % 2 == 0:
+    for i in range(width // 2):
+        print(""# "")
+else:
+    for i in range(width // 2):
+        print("" #"")","for i in range(width // 2):
+    print(""# "" if line % 2 == 0 else "" #"")",Detectable,,,"R6501 The branches of the 'if' statement are identical. Remove the 'if' if it is on purpose, or change the branches if not.(Emitted when all branches of an ‘if’ statement contain identical code.)
+R6556 The branches of the 'if' statement are similar. Move the 'if' into the branches, so that it only contains lines 3, 6, but only if the if's body has no effect on the condition's value.（Emitted when an ‘if’ statement wraps too long part of a block (similar to identical-if-branches-part, but this one can suggest moving if into a for loop, for example).）
+R6559 The branches of the 'if' statement are similar. Use helper variables to store the values that differ between the branches, or create a helper function.（Emitted when the duplication between if statement’s branches can be avoided using helper variables or functions.）",,
+No Early Return,Unsuitable,Expressions,Group1,A condition executes a long code block in the positive branch and a short one in the negative branch.,"if cond:
+    # long code
+else:
+    return 0","if not cond:
+    return 0
+# long code",Special Case,,,"R6616 Use early return（Emitted when a long block of code is followed by an else that just returns, breaks or continues.）",,
+Unnecessary Else/Elif,Unnecessary,Expressions,Group1,Redundant use of else after return/break/continue.,"if c:
+    return val1
+else:
+    return val2","if c:
+    return val1
+return val2",Detectable,"R1705: Unnecessary ""else"" after ""return"", remove the ""else"" and de-indent the code inside it (no-else-return)（Used in order to highlight an unnecessary block of code following an if, or a try/except containing a return statement. As such, it will warn when it encounters an else following a chain of ifs, all of them containing a return statement.）
+R1723: Unnecessary ""else"" after ""break"", remove the ""else"" and de-indent the code inside it (no-else-break)（Used in order to highlight an unnecessary block of code following an if containing a break statement. As such, it will warn when it encounters an else following a chain of ifs, all of them containing a break statement.）
+R1724: Unnecessary ""else"" after ""continue"", remove the ""else"" and de-indent the code inside it (no-else-continue)（Used in order to highlight an unnecessary block of code following an if containing a continue statement. As such, it will warn when it encounters an else following a chain of ifs, all of them containing a continue statement.）","WPS503 Found useless returning `else` statement（Forbid useless else cases in returning functions. We check single if, for, while, and try statements that all contain return, raise, continue, or break statements with this rule.）","R1705 Unnecessary ""else"" after ""return"", remove the ""else"" and de-indent the code inside it [default]
+R1723 Unnecessary ""else"" after ""break"", remove the ""else"" and de-indent the code inside it [default]
+",,
+Augmentable Assignment,Unsuitable,Expressions,Group1,A variable update expressible as an augmented assignment.,x = x + 4,x += 4,Detectable,,,R6609 Use augmented assignment: 'XXX' [default]（Emitted when an assignment can be simplified by using its augmented version.）,,
+Unused Import,Unnecessary,Data,Group1,A module that is imported but unused.,"import math
+print(max(3, 4))","print(max(3, 4))",Detectable,W0611: Unused XXX imported (unused-import)（Used when an imported module or variable is not used.）,F401 'XXX' imported but unused（A module has been imported but is not used anywhere in the file. The module should either be used or the import should be removed.）,F401 'XXX' imported but unused [default],unused import 'XX' (XX% confidence),
+Unnecessary Operator,Unnecessary,Expressions,Group1,The code uses unnecessary plus or double negation.,"profit = +3.33
+profit = ---3.33
+number = ~~42
+bar = not not foo","profit = 3.33
+prift = -3.33
+number = 42
+bar = foo",Detectable,,"WPS330 Found unnecessary operator(Forbid unnecessary operators in your code. You can write: 5.4 and +5.4. There’s no need to use the second version. Similarly --5.4, ---5.4, not not foo, and ~~42 contain unnecessary operators.)
+SIM208 Use 'foo' instead of 'not (not foo)'","
+WPS330 Found unnecessary operator: 3.33",,
+Redundant Arithmetic,Unnecessary,Expressions,Group1,Identity operation or constant-valued expression.,"1*x, x/x","x, 1.0",Detectable,,WPS345 Found meaningless number operation,"R6608 Redundant arithmetic(Emitted when there is redundant arithmetic (e.g. +0, *1) in an expression.)",,
+Unnecessary Parenthesis,Unclear,Typographic,Group1  + Group2 (TP2),Parentheses used unnecessarily in a single item condition.,return(value),return value,Detectable,"C0325: Unnecessary parens after 'XX' keyword (superfluous-parens)（Used when a single item in parentheses follows an if, for, or other keyword.）",,C0325 Unnecessary parens after 'XX' keyword [enhancement],,
+Trivial Comment,Unnecessary,Documentation,Group1 + Group2 (DC1),The code contains trivial comment directly corresponding to the statement.,x += 1  # increase value by 1,x += 1,Undetectable,,,,,
+Redundant Variable/Attribute,Duplication,Data,Group1 + Group2 (DT5）,"The code contains two variables/attributes, where one can be cheaply computed from the other.","values = []
+between = m - 1
+
+for i in range(m, n + 1):
+    between += 1
+    if between % 6 != 0:
+        if between % 3 == 0:
+            values.append(between)
+        elif between % 2 == 0:
+            values.append(between)
+
+print(values)","values = []
+
+for i in range(m, n + 1): 
+    if i % 6 != 0:
+        if i % 3 == 0:
+            values.append(i)
+        elif i % 2 == 0:
+            values.append(i)
+
+print(values)",Undetectable,,,,,
+Redundant condition (followed by loop),Unnecessary,Organization,Group1 + Group2 (OR2),"There is a condition in the code that can be removed, because a following loop would perform no iteration and return the same result.","if len(lst) == 0:
+    return 0
+sum = 0
+for i in range(len(lst)):
+    # body
+return sum","sum = 0
+for i in range(len(lst)):
+# body
+return sum",Undetectable,,,,,
+List for Membership Testing,Unsuitable,Data,Group1,"The code frequently tests for membership in a list, which could just as well be a set.","while cond:
+    ...
+    if value in num_list: ...","while cond:
+   ...
+   if value in num_set: ...",Special Case,R6201: Consider using set for membership test (use-set-for-membership)（Membership tests are more efficient when performed on a lookup optimized datatype like ``sets``.）,,,,
+Repeated Arithmetic Operation,Duplication,Expressions,Group1,Repeated use of the same arithmetic operation over the same expression. ,"y = x+x+x
+z = x*x*x","y = 3 * x
+z = x ** 3",Detectable,,,R6607 Use exponentiation instead of repeated muliplication in X * X * X. [enhancement]（Emitted when the code contains repeated adition/multiplication instead of multiplication/exponentiation.）,,
+Local Variable Used Only to Return,Unnecessary,Data,Group1 + Group2 (DT4),A local variable is used only in a return statement.,"def new_row(N, comb):
+    res = 0  
+    if N <= 0:
+        res = sum(comb)  
+        return res
+    
+    copy = comb[:]  
+    for i in range(len(comb)):
+        if comb[i] != 0:
+            comb[i] = copy[i-5] + copy[i+5] + copy[i+1] + copy[i-1]
+    
+    res = new_row(N-1, comb)  
+    return res","def new_row(N, comb):
+    if N <= 0:
+        return sum(comb) 
+    
+    copy = comb[:] 
+    for i in range(len(comb)):
+        if comb[i] != 0:
+            comb[i] = copy[i-5] + copy[i+5] + copy[i+1] + copy[i-1]
+    
+    return new_row(N-1, comb) ",Detectable,," WPS331 Found variables that are only used for `return`: result（Forbid local variables that are only used in return statements. We also allow cases when a variable is assigned, then there are some other statements without direct variable access and the variable is returned. We reserve this use-case to be able to do some extra work before the function returns. We also allow the return of partial, sorted, or modified tuple items that are defined just above.）",WPS331 Found variables that are only used for `return`: result,,
+Missing Docstring,Missing,Documentation,Group1 + Group2 (DC4),"A class, function, or method does not have a docstring.","class Person: 
+    def __init__(self, first_name, last_name):
+        self.first_name = first_name
+        self.last_name = last_name","class Person:
+    """"""Class representing a person.""""""
+
+    def __init__(self, first_name, last_name):
+        """"""
+        Initialize a Person instance.
+
+        Args:
+            first_name (str): The person's first name.
+            last_name (str): The person's last name.
+        """"""
+        self.first_name = first_name
+        self.last_name = last_name",Detectable,"C0116: Missing function or method docstring (missing-function-docstring)（Used when a function or method has no docstring. Some special methods like __init__ do not require a docstring.）
+C0115: Missing class docstring (missing-class-docstring)（Used when a class has no docstring. Even an empty class must have a docstring.）","D101 Missing docstring in public class
+D102 Missing docstring in public method
+D103 Missing docstring in public function",,,
+Missing Type Annotation in Annotated Code,Missing,Documentation,Group1,A function or attribute misses a type annotation in code that uses them.,"def inc(x):  # Error: Function is missing a type annotation
+    return x + 1","def inc_ok(x: int) -> int: 
+    return x + 1",Undetectable,,,,,
+Calling Dunder Method,Unsuitable,Expressions,Group1,The code explicitly calls a double-underscore method instead of using the standard approach.,x.__gt__(2),x > 2,Detectable,C2801: Unnecessarily calls dunder method_ XXX_. Use * operator. (unnecessary-dunder-call)（Used when a dunder method is manually called instead of using the corresponding function/method/operator.）,WPS609 Found direct magic attribute usage: _XXX_（Forbid directly calling certain magic attributes and methods.）,WPS609 Found direct magic attribute usage: __XXX__,,
+Inconsistent Returns,Inconsistent,Control/Block,Group1,The code sometimes returns a value explicitly and sometimes returns implicit None.,"if cond:
+    return True
+return","if cond:
+    return True
+return None",Detectable," R1710: Either all return statements in a function should return an expression, or none of them should. (inconsistent-return-statements)(According to PEP8, if any return statement returns an expression, any return statements where no value is returned should explicitly state this as return None, and an explicit return statement should be present at the end of the function (if reachable))",,"R1710 Either all return statements in a function should return an expression, or none of them should. [python-specific]
+R6206 Both branches should return a value explicitly (one returns implicit None) [default]",,
+Unnecessary Pass,Unnecessary,Control/Block,Group1,A redundant pass statement in function bodies.,"def fun():
+    pass
+    # body","def fun():
+    # body",Detectable,"W0107: Unnecessary pass statement (unnecessary-pass)（Used when a ""pass"" statement can be removed without affecting the behaviour of the code.）",,W0107 Unnecessary pass statement [default],,
+Redundant Not,Unclear,Expressions,Group1 + Group2 (EX4),Boolean expression with unnecessary negation.,not a <= b,a > b,Detectable,"C0117 Consider changing ""not X <**"" to ""X >= **"" (Used when a boolean expression contains an unneeded negation, e.g. when two negation operators cancel each other out.)", WPS508 Found incorrect `not` with compare usage（Forbid not with compare expressions.）,"C0117 Consider changing  ""not X <**"" to ""X >= **"" [default]
+WPS508 Found incorrect `not` with compare usage",,
+Zero-Length Compare,Unsuitable,Expressions,Group1,Emptiness of a container is tested by comparing its size to zero instead of the pythonic way of converting the container itself to bool.,if len(lst) == 0:,if not lst:,Detectable,"C1805: ""len(lst) == 0"" can be simplified to ""not len(lst)"", if it is strictly an int, as 0 is falsey (use-implicit-booleaness-not-comparison-to-zero)","WPS507 Found useless `len()` compare(Forbid unpythonic zero-length compare.Python’s structures like dicts, lists, sets, and tuples all have __bool__ method to checks their length. So, there’s no point in wrapping them into len(...) and checking that it is bigger that 0 or less then 1, etc.)",WPS507 Found useless `len()` compare,,
+Unused Control Variable,Unnecessary,Control/Block,Group1,The control variable of a loop is unused in its body.,"for i in range(n):
+    print(""Hello"")","for _ in range(n):
+    print(""Hello"")",Detectable,,"B007 Loop control variable 'i' not used within the loop body. If this is intended, start the name with an underscore.(Checks for unused variables in loops (e.g., for and while statements).)",,,
+Inappropriate Whitespace: Trailing,Inconsistent,Typographic,Group1 + Group2 (TP5),"Violating PEP 8 conventions about whitespace, trailing spaces / lines, inconsitent line endings ...","def first_func():
+    # The line below has two spaces after its final character
+    pass••","def first_func():
+    pass",Detectable,"C0303: Trailing whitespace (trailing-whitespace)（Used when there is whitespace between the end of a line and the newline.）
+C0304: Final newline missing (missing-final-newline)（Used when the last line in a file is missing a newline.）
+C0305: Trailing newlines (trailing-newlines)（Used when there are trailing blank lines in a file.）","W291 trailing whitespace（There should be no whitespace after the final character in a line.）
+W292 no newline at end of file（Files should end with a newline.）
+W293 blank line contains whitespace（Blank lines should not contain any tabs or spaces.）
+W391 blank line at end of file（There should be one, and only one, blank line at the end of each file. This warning will occur when there are zero, two, or more than two blank lines.）
+","W291 trailing whitespace [default]
+W292 no newline at end of file [default]
+W293 blank line contains whitespace [default]
+W391 blank line at end of file [default]",,
+Negated Condition with Else Clause,Unclear,Expressions,Group1,"The code contains an if statement with an else branch, whose condition is negated.","if not cond:
+     # body 1
+else:
+     # body 2","if cond:
+    # body 2
+else:
+    # body 1",Detectable,,WPS504 Found negated condition（Forbid negated conditions together with else clause. Move actions from the negated if condition to the else condition）,WPS504 Found negated condition,,
+Argument Does Not Come First in Comparison,Unclear,Expressions,Group1,A code uses a comparison where a constant comes first and a variable only second.,if 3 < some_x:,if some_x > 3:,Detectable,,"WPS309 Found reversed compare order（Forbid comparisons where the argument doesn’t come first.Refactor your comparison expression, place the argument first.）",WPS309 Found reversed compare order,,
+Using Float Division,Unsuitable,Expressions,Group1,Using float division and immediately converting the result to int.,int(x / y),x // y,Detectable,,,R6602 Use integral division ( Emitted when the code uses float division and converts the result to int.),,
+Identity Comprehension,Unsuitable,Data,Group1,The comprehension does not change the structure and there are better ways to copy a structure.,[number for number in lst],lst.copy(),Detectable,"R1721: Unnecessary use of a comprehension, use list(numbers) instead. (unnecessary-comprehension)（Instead of using an identity comprehension, consider using the list, dict or set constructor. It is faster and simpler）","C416 Unnecessary list comprehension - rewrite using list().（It’s unnecessary to use a dict/list/set comprehension to build a data structure if the elements are unchanged. Wrap the iterable with dict(), list(), or set() instead.）","R1721 Unnecessary use of a comprehension, use list(numbers) instead. [python-specific]",,
+Explicit Type Comparison,Unsuitable,Expressions,Group1,The code compares types instead of using isinstance.,type(val) == int,"isinstance(val, int)",Detectable," C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)（The idiomatic way to perform an explicit typecheck in Python is to use isinstance(x, Y) rather than type(x) == Y, type(x) is Y. Though there are unusual situations where these give different results.）","E721 do not compare types, for exact checks use `is` / `is not`, for instance checks use `isinstance()`（A object should be be compared to a type by using isinstance. This is because isinstance can handle subclasses as well.）","C0123 Use isinstance() rather than type() for a typecheck. [python-specific]
+E721 do not compare types, for exact checks use `is` / `is not`, for instance checks use `isinstance()` [default]",,
+Using len(container) Without Compare,Unsuitable,Expressions,Group1,Emptiness of a container is tested by getting its length and implicitly converting it to bool.,"if len(lst):
+    # body","if len(lst) == 0: / if not lst:
+    # body",Special Case,C1802: Do not use `len(SEQUENCE)` without comparison to determine if a sequence is empty (use-implicit-booleaness-not-len)（Empty sequences are considered false in a boolean context. You can either remove the call to 'len' (`if not x) or compare the length against a scalar (if len(x) > 1).）,,,,
+Import Outside Toplevel,Unsuitable,Organization,Group1,Importing other modules from other place then the top level.,"def fun():
+    import module","import module
+
+def fun():
+    # body
+",Detectable,C0415: Import outside toplevel (math) (import-outside-toplevel)（Used when an import statement is used anywhere other than the module toplevel. Move this import to the top of the file.）,WPS433 Found nested import（Forbid imports nested in functions.）,C0415 Import outside toplevel (math) [default],,
+Unsuited List Extension,Unsuitable,Data,Group1,The code extends list by a single argument instead of appending it.,lst += [val] or lst.extend([val]),lst.append(val),Detectable,,,R6601 Use XX.append(*) instead of XXX. [default](Emitted when code extends list by a single argument instead of appending it.),,
+Not Using f-Strings,Unsuitable,Expressions,Group1,"using %, +, join or format","from string import Template
+
+menu = (""eggs"", ""spam"", 42.4)
+
+old_order = ""%s and %s: %.2f ¤"" % menu  # [consider-using-f-string]
+beginner_order = menu[0] + "" and "" + menu[1] + "": "" + str(menu[2]) + "" ¤""
+joined_order = "" and "".join(menu[:2])
+# +1: [consider-using-f-string]
+format_order = ""{} and {}: {:0.2f} ¤"".format(menu[0], menu[1], menu[2])
+# +1: [consider-using-f-string]
+named_format_order = ""{eggs} and {spam}: {price:0.2f} ¤"".format(
+    eggs=menu[0], spam=menu[1], price=menu[2]
+)
+template_order = Template(""$eggs and $spam: $price ¤"").substitute(
+    eggs=menu[0], spam=menu[1], price=menu[2]
+)","menu = (""eggs"", ""spam"", 42.4)
+
+f_string_order = f""{menu[0]} and {menu[1]}: {menu[2]:0.2f} ¤""",Special Case,C0209: Formatting a regular string which could be an f-string (consider-using-f-string)（Used when we detect a string that is being formatted with format() or % which could potentially be an f-string. The use of f-strings is preferred. Requires Python 3.6 and ``py-version >= 3.6``.）,,C0209 Formatting a regular string which could be an f-string [python-specific],,
+Redundant Component in Slice,Unnecessary,Data,Group1,The code explicitly states implicit bounds on list slices.,x[0:7:1],x[:7:1],Detectable,,WPS349 Found redundant subscript slice（Forbid redundant components in a subscript’s slice.）,WPS349 Found redundant subscript slice,,
+Equality with None,Unsuitable,Expressions,Group1,"Comparisons to singletons like None should always be done with is, not using the equality operators.",val == None,val is None,Detectable,"C0121: Comparison 'value == None' should be 'value is None' (singleton-comparison)（Used when an expression is compared to singleton values like True, False or None.）","E711 comparison to None should be 'if cond is None:'（Comparisons to the singleton objects, like True, False, and None, should be done with identity, not equality. Use “is” or “is not”）",E711 comparison to None should be 'if cond is None:' [default],,
+Absolute Value,Unsuitable,Expressions,Group1,Compound condition equivalent to a single condition with absolute value.,x < 4 and x > -4,abs(x) < 4,Detectable,,,R6211 'x < * and x > -*' can be replaced with 'abs(x) < * (Emitted when there is a problem like x < 4 and x > -4 and suggests abs(x) < 4.)',,
+If Statement Instead of min/max,Unsuitable,Expressions,Group1,"The code uses an if statement to determine a maximum/minimum of two values, instead of function max/min.","if longest < current:
+    longest = current","longest = max(longest, current)",Detectable,"R1731: Consider using 'value1 = max(value1, value2)' instead of unnecessary if block (consider-using-max-builtin)（Using the max builtin instead of a conditional improves readability and conciseness.）
+R1730: Consider using 'value1 = min(value1, value2)' instead of unnecessary if block (consider-using-min-builtin)（Using the min builtin instead of a conditional improves readability and conciseness.）",,"R1731 Consider using 'value1 = max(value1, value2)' instead of unnecessary if block [enhancement]
+R1730 Consider using 'value1 = min(value1, value2)' instead of unnecessary if block [enhancement]",,
+For with Redundant Dictionary Indexing,Unsuitable,Data,Group1,"Iterating through dictionary keys, accessing (not modifying) items at the current key only.","for key in dictionary:
+    print(key, dictionary[key])","for key, val in dictionary.items():
+    print(key, val)",Detectable,,WPS528 Found implicit `.items()` usage,,,
+Redundant Typecasts,Unnecessary,Expressions,Group2 (EX2),A typecast to the current type is a redundant operation,"var1 = str(input())
+var2 = int(6 + 4)","var1 = input()
+var2 = 6 + 4",Undetectable,,,,,
+Unused return value,Unnecessary,Data,Group2 (DT3),a return value that is not needed by the caller,"def swap(values):
+    temp = values[0]
+    values[0] = values[1]
+    values[1] = temp
+    return temp  ","def swap(values):
+    temp = values[0]
+    values[0] = values[1]
+    values[1] = temp",Undetectable,,,,,
+Excessive use of variables or data structures to store intermediate values,Duplication,Data,Group2 (DT6),the use ofunnecessary variables to store intermediate results,"condAux = cond1 and cond2
+condRes = condAux and cond3",condRes = cond1 and cond2 and cond3,Undetectable,,,,,
+Redundant check of a condition (part of a composite condition),Unnecessary,Control/Block,Group2 (CB3),"the value of some conditions in a complex Boolean expression may be already known for a given execution flow, hence such conditions can be removed","if num1 % 2 == 0:
+    print(num1, ""odd"")
+elif num2 % 2 == 0 and num1 % 2 != 0:
+    print(num2, ""odd"", num1, ""even"")","if num1 % 2 == 0:
+    print(num1, ""odd"")
+elif num2 % 2 == 0: 
+    print(num2, ""odd"", num1, ""even"")",Special Case,,,"R6212 'num > 0 and num > 0' can be simplified to 'num > 0'. Simplify the condition if it is on purpose, or change it if it was not. (""redundant-compare-in-condition"",Emitted when there is a problem like x > 4 or x > 3 and suggests x > 3. (ie min{4, 3}))",,
+While Condition Tested Again in the Middle of Its Block,Duplication,Control/Block,Group2 (CB13),A while condition tested again in the middle of its block,"varCond = ...  # setting initial value
+while varCond != 0:
+    varCond = ...  # setting initial value
+    if varCond == 0:
+        break
+    # code performing some function","varCond = ...  # setting initial value
+while varCond != 0:
+    # code performing some function
+    varCond = ...  # getting new value",Undetectable,,,,,
+Multiple Distinct Loops That Operate Over the Same Data,Duplication,Control/Block,Group2 (CB14),multiple for loops with the same iteration range that could be merged into a single loop,"numbers = [1, 2, 3, 4, 5]
+for num in numbers:
+    print(f""Square of {num}: {num ** 2}"")
+for num in numbers:
+    print(f""Cube of {num}: {num ** 3}"")
+for num in numbers:
+    print(f""Double of {num}: {num * 2}"")","numbers = [1, 2, 3, 4, 5]
+
+# Merge all operations into a single loop
+for num in numbers:
+    print(f""Square of {num}: {num ** 2}, Cube: {num ** 3}, Double: {num * 2}"")",Undetectable,,,,,
+Special Treatment of Boundary Case(s) Inside Loop Body,Unclear,Control/Block,Group2 (CB16),some special treatment of a boundary case within the loop,"print(""{"", end="""")
+for i in range(len(testArray)):
+    if i == len(testArray) - 1:
+        print(testArray[i], end=""]"")
+    else:
+        print(testArray[i], end="", "")","print(""{"", end="""")
+
+for i in range(len(testArray) - 1):  
+    print(testArray[i], end="", "")
+
+print(testArray[-1], end=""]"") ",Undetectable,,,,,
+Statement Inside Loop Only Needed in Last Iteration,Unclear,Control/Block,Group2 (CB17),a statement within a loop that is only executed in the last iteration,"for iter in lst:
+    var1 += 1
+    var2 += iter
+    var3 = var2 / var1","for iter in lst:
+    var1 += 1
+    var2 += iter
+var3 = var2 / var1",Undetectable,,,,,
+Single-Iteration While Loop Used Instead of if,Unsuitable,Control/Block,Group2 (CB18),A single-iteration while loop used instead of an ifconditional,"while num1 + num2 < 9:
+    print(num1 + num2, ""has more than 1 digit."")
+    break","if num1 + num2 < 9:
+    print(num1 + num2, ""has more than 1 digit."")",Undetectable,,,,,
+Use of Recursion Instead of a Simple Iteration,Unsuitable,Control/Block,Group2 (CB19),the use of recursion when an iteration would be a simpler solution,"def input_hour():
+    hour = int(input(""Please enter the hour (0-23): ""))
+    if 0 <= hour <= 23:
+        return hour
+    else:
+        return input_hour()","def input_hour():
+    while True: 
+        hour = int(input(""Please enter the hour (0-23): ""))
+        if 0 <= hour <= 23:
+            return hour ",Undetectable,,,,,
+Infinite Loops with Breaks,Unsuitable,Control/Block,Group2 (CB22),Infinite loops with a break to terminate the loop should be replaced with a loop using an explicit end condition,"while True:
+    number = int(input(""Enter an even number: ""))
+    
+    if number % 2 == 0:
+        break","number = int(input(""Enter an even number: ""))
+while number % 2 != 0:
+    number = int(input(""Enter an even number: ""))",Undetectable,,,,,
+User-Defined Functions Doing Essentially the Same Work,Duplication,Organization,Group2 (OR4),"multiple functions that perform almost
+identical tasks","def print_latitude(city, deg, min, sec):
+    print(f""The latitude of {city} is {deg}:{min}:{sec}"")
+
+def print_longitude(city, deg, min, sec):
+    print(f""The longitude of {city} is {deg}:{min}:{sec}"")","def print_location(city, lat_long, deg, min, sec):
+    print(f""The {lat_long} of {city} is {deg}:{min}:{sec}"")",Undetectable,,,,,
+Arbitrary Organization of Declarations,Unclear,Organization,Group2 (OR5),the functions may be casually spread over the code,"var1 = input()
+
+def func1():
+    ...
+var2 = input()
+var3 = func1(var1, var2)
+
+def func2():
+    ...
+var4 = func2(var3, var1)
+var5 = input()","def func1():
+    ...
+    
+def func2():
+    ...
+
+var1 = input()
+var2 = input()
+var3 = func1(var1, var2)
+var4 = func2(var3, var1)
+var5 = input()",Undetectable,,,,,
+Inconsistent Order of the Same Parameters in Different Methods,Inconsistent,Organization,Group2 (OR7),"the order of parameters in the method signatures may
+be inconsistent","def print_date(day, month, year):
+    print(f""{month}-{day}-{year}"")
+
+def input_date(date_values):  
+    date_values[1] = input_year()  
+    date_values[2] = input_month()  
+    date_values[0] = input_day(date_values[1], date_values[2]) ","def print_date(year, month, day):
+    print(f""{month}-{day}-{year}"")
+
+def input_date(date_values):  
+    date_values[0] = input_year()  
+    date_values[1] = input_month()  
+    date_values[2] = input_day(date_values[0], date_values[1]) ",Undetectable,,,,,
